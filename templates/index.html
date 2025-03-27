@@ -1,0 +1,31 @@
+{% extends 'layout.html' %}
+{% block body %}
+<h3 class="text-center text-muted mb-3"></h3>
+<p class="text-right"><a href="{{url_for(add_produto)}}" class="btn btn-success">+ Novo Produto</a></p>
+<table class="table table-bordered">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Nome</th>
+        <th scope="col">Quantidade em Estoque</th>
+        <th scope="col">Fabricante</th>
+        <th scope="col">Descrição</th>
+        <th scope="col">Preço</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for row in datas %}
+        <tr>
+            <td>{{loop.index}}</td>
+            <td>{{row.NOME}}</td>
+            <td>{{row.QUANTIDADE_ESTOQUE}}</td>
+            <td>{{row.FABRICANTE}}</td>
+            <td>{{row.DESCRICAO}}</td>
+            <td>{{row.PRECO}}</td>
+            <td><a href="{{url_for('edit_produto', id=row.ID)}}" class="btn btn-primary">Editar</a></td>
+            <td><a href="{{url_for('delete_produto', id=row.ID)}}" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja apagar?')">Deletar</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
