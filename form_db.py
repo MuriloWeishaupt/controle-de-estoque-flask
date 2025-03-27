@@ -9,7 +9,7 @@ sql = '''CREATE TABLE "produtos" (
     "NOME" TEXT,
     "QUANTIDADE_ESTOQUE" INTEGER,
     "FABRICANTE" TEXT,
-    "DESCRIÇÃO" TEXT,
+    "DESCRICAO" TEXT,
     "PRECO" REAL
     )'''
 

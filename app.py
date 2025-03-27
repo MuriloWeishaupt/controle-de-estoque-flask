@@ -16,9 +16,9 @@ def index():
 
 
 #Rota Adicionar Produto
-@app.route("/add_product", methods=["POST", "GET"])
+@app.route("/add_produto", methods=["POST", "GET"])
 
-def add_product():
+def add_produto():
     if request.method=="POST":
         nome = request.form["nome"]
         quantidade_estoque = request.form["quantidade_estoque"]

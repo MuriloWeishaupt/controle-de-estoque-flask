@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block body %}
 <h3 class="text-center text-muted mb-3"></h3>
-<p class="text-right"><a href="{{url_for(add_produto)}}" class="btn btn-success">+ Novo Produto</a></p>
+<p class="text-right"><a href="{{url_for('add_produto')}}" class="btn btn-success">+ Novo Produto</a></p>
 <table class="table table-bordered">
     <thead>
       <tr>
@@ -10,7 +10,7 @@
         <th scope="col">Quantidade em Estoque</th>
         <th scope="col">Fabricante</th>
         <th scope="col">Descrição</th>
-        <th scope="col">Preço</th>
+        <th scope="col">Preço (R$)</th>
       </tr>
     </thead>
     <tbody>
