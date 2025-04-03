@@ -24,6 +24,11 @@ def index():
 @bp_produto.route("/add_produto", methods=["POST", "GET"])
 
 def add_produto():
+
+    if "user_id" not in session:
+        flash("Você precisa fazer login para acessar essa página")
+        return  redirect(url_for("auth.login"))
+    
     if request.method=="POST":
         nome = request.form["nome"]
         quantidade_estoque = request.form["quantidade_estoque"]
