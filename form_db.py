@@ -31,10 +31,13 @@ def criar_banco():
                     quantidade INTEGER NOT NULL,
                     tipo_movimentacao TEXT CHECK(tipo_movimentacao in ('entrada', 'saida')) NOT NULL,
                     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (produto_id) REFERENCES produtos(id)
+                    usuario_id INTEGER,
+                    FOREIGN KEY (produto_id) REFERENCES produtos(id),
+                    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
                     )''')
     
     cur.execute("INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, ?)", ("admin", "admin@gmail.com", "admin", "admin"))
+    cur.execute("INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, ?)", ("murilo", "murilo@gmail.com", "murilo123", "comum"))
 
     con.commit()
     con.close()

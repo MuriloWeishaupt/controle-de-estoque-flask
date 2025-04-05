@@ -16,7 +16,7 @@ def index():
         cur.execute("SELECT * FROM produtos")
         data = cur.fetchall()
 
-    quantidade_minima = 5
+    quantidade_minima = 10
     return render_template("index.html", datas=data, quantidade_minima=quantidade_minima)
 
 @bp_produto.route("/add_produto", methods=["POST", "GET"])
@@ -107,9 +107,12 @@ def movimentar_produto(id):
                 "UPDATE produtos SET QUANTIDADE_ESTOQUE = ? WHERE ID = ?",
                 (nova_quantidade, id)
             )
+
+            usuario_id = session.get("user_id")
+
             cur.execute(
-                "INSERT INTO movimentacoes (produto_id, tipo_movimentacao, quantidade) VALUES (?, ?, ?)",
-                (id, tipo_movimentacao, quantidade)
+                "INSERT INTO movimentacoes (produto_id, tipo_movimentacao, quantidade, usuario_id) VALUES (?, ?, ?, ?)",
+                (id, tipo_movimentacao, quantidade, usuario_id)
             )
             con.commit()
 
@@ -130,8 +133,29 @@ def historico_produto(id):
 
         cur.execute("SELECT * FROM produtos WHERE ID = ?", (id,))
         produto = cur.fetchone()
-
-        cur.execute("SELECT * FROM movimentacoes WHERE produto_id = ? ORDER BY data DESC", (id,))
+        cur.execute('''
+                    SELECT m.*, u.nome as nome_usuario
+                    FROM movimentacoes m
+                    JOIN usuarios u ON m.usuario_id = u.id
+                    WHERE m.produto_id = ?
+                    ORDER BY m.data DESC
+                    ''', (id,))
         historico = cur.fetchall()
 
-    return render_template("historico_produto.html", produto=produto, historico=historico)
+        cur.execute('''
+                    SELECT tipo_movimentacao, DATE(data) as dia, SUM(quantidade) as total
+                    FROM movimentacoes
+                    WHERE produto_id = ?
+                    GROUP BY dia, tipo_movimentacao
+                    ORDER BY dia ASC
+                    ''', (id,))
+        movimentacoes_agrupadas = cur.fetchall()
+        movimentacoes_agrupadas_dict = [
+            {
+                "dia":  row["dia"],
+                "tipo_movimentacao": row["tipo_movimentacao"],
+                "total": row["total"]
+            } for row in movimentacoes_agrupadas
+        ]
+
+    return render_template("historico_produto.html", produto=produto, historico=historico, movimentacoes_agrupadas=movimentacoes_agrupadas_dict)

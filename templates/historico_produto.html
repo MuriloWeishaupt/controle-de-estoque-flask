@@ -11,6 +11,7 @@
       <th>Tipo</th>
       <th>Quantidade</th>
       <th>Data</th>
+      <th>Usuario</th>
     </tr>
   </thead>
   <tbody>
@@ -26,12 +27,75 @@
       </td>
       <td>{{ mov.quantidade }}</td>
       <td>{{ mov.data }}</td>
+      <td>{{ mov.nome_usuario }}</td>
     </tr>
     {% else %}
     <tr>
-      <td colspan="4" class="text-center text-muted">Sem movimentações registradas.</td>
+      <td colspan="5" class="text-center text-muted">Sem movimentações registradas.</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
+<hr>
+<br>
+<br>
+
+
+<canvas id="graficoMovimentacoes" height="100"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const dadosBrutos = JSON.parse('{{ movimentacoes_agrupadas | tojson | safe }}');
+  const diasUnicos = [...new Set(dadosBrutos.map(m => m.dia))];
+
+  const entradas = diasUnicos.map(dia => {
+    const mov = dadosBrutos.find(m => m.dia === dia && m.tipo_movimentacao === 'entrada');
+    return mov ? mov.total : 0;
+  });
+
+  const saidas = diasUnicos.map(dia => {
+    const mov = dadosBrutos.find(m => m.dia === dia && m.tipo_movimentacao === 'saida');
+    return mov ? mov.total : 0;
+  });
+
+  const ctx = document.getElementById('graficoMovimentacoes').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: diasUnicos,
+      datasets: [
+        {
+          label: 'Entradas',
+          data: entradas,
+          backgroundColor: 'rgba(40, 167, 69, 0.6)', 
+        },
+        {
+          label: 'Saídas',
+          data: saidas,
+          backgroundColor: 'rgba(220, 53, 69, 0.6)',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Quantidade'
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Data'
+          }
+        }
+      }
+    }
+  });
+</script>
+
 {% endblock %}
