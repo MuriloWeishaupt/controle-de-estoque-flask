@@ -1,81 +1,137 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import sqlite3 as sql
 
-bp_produto = Blueprint("produto",__name__)
+bp_produto = Blueprint("produto", __name__)
 
 @bp_produto.route("/")
-@bp_produto.route("/index") 
-
+@bp_produto.route("/index")
 def index():
-
     if "user_id" not in session:
         flash("Você precisa fazer login para acessar essa página")
-        return  redirect(url_for("auth.login"))
+        return redirect(url_for("auth.login"))
 
-    con = sql.connect("form_db.db")
-    con.row_factory=sql.Row
-    cur=con.cursor()
-    cur.execute("select * from produtos")
-    data = cur.fetchall()
-    return render_template("index.html", datas=data)
+    with sql.connect("form_db.db") as con:
+        con.row_factory = sql.Row
+        cur = con.cursor()
+        cur.execute("SELECT * FROM produtos")
+        data = cur.fetchall()
 
+    quantidade_minima = 5
+    return render_template("index.html", datas=data, quantidade_minima=quantidade_minima)
 
-#Rota Adicionar Produto
 @bp_produto.route("/add_produto", methods=["POST", "GET"])
-
 def add_produto():
-
     if "user_id" not in session:
         flash("Você precisa fazer login para acessar essa página")
-        return  redirect(url_for("auth.login"))
-    
-    if request.method=="POST":
+        return redirect(url_for("auth.login"))
+
+    if request.method == "POST":
         nome = request.form["nome"]
         quantidade_estoque = request.form["quantidade_estoque"]
-        fabricante  =request.form["fabricante"]
+        fabricante = request.form["fabricante"]
         descricao = request.form["descricao"]
         preco = request.form["preco"]
-        con = sql.connect("form_db.db")
-        cur = con.cursor()
-        cur.execute("insert into produtos(NOME, QUANTIDADE_ESTOQUE, FABRICANTE, DESCRICAO, PRECO) values (?,?,?,?,?)", (nome, quantidade_estoque, fabricante, descricao, preco))
-        con.commit()
+
+        with sql.connect("form_db.db") as con:
+            cur = con.cursor()
+            cur.execute(
+                "INSERT INTO produtos (NOME, QUANTIDADE_ESTOQUE, FABRICANTE, DESCRICAO, PRECO) VALUES (?, ?, ?, ?, ?)",
+                (nome, quantidade_estoque, fabricante, descricao, preco)
+            )
+            con.commit()
+
         flash("Dados cadastrados!", "success")
         return redirect(url_for("produto.index"))
+
     return render_template("add_produto.html")
 
-
-#Rota Atualzar Produto
 @bp_produto.route("/edit_produto/<string:id>", methods=["POST", "GET"])
-
 def edit_produto(id):
     if request.method == "POST":
         nome = request.form["nome"]
         quantidade_estoque = request.form["quantidade_estoque"]
-        fabricante  =request.form["fabricante"]
+        fabricante = request.form["fabricante"]
         descricao = request.form["descricao"]
         preco = request.form["preco"]
-        con = sql.connect("form_db.db")
-        cur = con.cursor()
-        cur.execute("update produtos set NOME=?, QUANTIDADE_ESTOQUE=?, FABRICANTE=?, DESCRICAO=?, PRECO=? where ID=?", (nome, quantidade_estoque, fabricante, descricao, preco, id))
-        con.commit()
+
+        with sql.connect("form_db.db") as con:
+            cur = con.cursor()
+            cur.execute(
+                "UPDATE produtos SET NOME = ?, QUANTIDADE_ESTOQUE = ?, FABRICANTE = ?, DESCRICAO = ?, PRECO = ? WHERE ID = ?",
+                (nome, quantidade_estoque, fabricante, descricao, preco, id)
+            )
+            con.commit()
+
         flash("Dados Atualizados!", "success")
         return redirect(url_for("produto.index"))
-    con = sql.connect("form_db.db")
-    con.row_factory = sql.Row
-    cur = con.cursor()
-    cur.execute("select * from produtos where ID=?", (id,))
-    data= cur.fetchone()
+
+    with sql.connect("form_db.db") as con:
+        con.row_factory = sql.Row
+        cur = con.cursor()
+        cur.execute("SELECT * FROM produtos WHERE ID = ?", (id,))
+        data = cur.fetchone()
+
     return render_template("edit_produto.html", data=data)
 
-#Rota Deletar Produto
-
 @bp_produto.route("/delete_produto/<string:id>", methods=["GET"])
-
 def delete_produto(id):
-    con = sql.connect("form_db.db")
-    cur = con.cursor()
-    cur.execute("delete from produtos where ID=?", (id,))
-    con.commit()
+    with sql.connect("form_db.db") as con:
+        cur = con.cursor()
+        cur.execute("DELETE FROM produtos WHERE ID = ?", (id,))
+        con.commit()
+
     flash("Dados Deletados!", "warning")
     return redirect(url_for("produto.index"))
-    
+
+@bp_produto.route("/movimentar/<int:id>", methods=["GET", "POST"])
+def movimentar_produto(id):
+    with sql.connect("form_db.db") as con:
+        con.row_factory = sql.Row
+        cur = con.cursor()
+        cur.execute("SELECT * FROM produtos WHERE ID = ?", (id,))
+        produto = cur.fetchone()
+
+        if request.method == "POST":
+            tipo_movimentacao = request.form["tipo_movimentacao"]
+            quantidade = int(request.form["quantidade"])
+
+            if tipo_movimentacao == 'entrada':
+                nova_quantidade = produto["QUANTIDADE_ESTOQUE"] + quantidade
+            elif tipo_movimentacao == 'saida':
+                nova_quantidade = produto["QUANTIDADE_ESTOQUE"] - quantidade
+                if nova_quantidade < 0:
+                    flash("Estoque insuficiente!", "danger")
+                    return redirect(url_for('produto.index'))
+
+            cur.execute(
+                "UPDATE produtos SET QUANTIDADE_ESTOQUE = ? WHERE ID = ?",
+                (nova_quantidade, id)
+            )
+            cur.execute(
+                "INSERT INTO movimentacoes (produto_id, tipo_movimentacao, quantidade) VALUES (?, ?, ?)",
+                (id, tipo_movimentacao, quantidade)
+            )
+            con.commit()
+
+            flash("Movimentação realizada com sucesso!", "success")
+            return redirect(url_for("produto.index"))
+
+    return render_template("movimentacao_produto.html", produto=produto)
+
+@bp_produto.route("/historico/<int:id>")
+def historico_produto(id):
+    if "user_id" not in session:
+        flash("Você precisa fazer login!")
+        return redirect(url_for("auth.login"))
+
+    with sql.connect("form_db.db") as con:
+        con.row_factory = sql.Row
+        cur = con.cursor()
+
+        cur.execute("SELECT * FROM produtos WHERE ID = ?", (id,))
+        produto = cur.fetchone()
+
+        cur.execute("SELECT * FROM movimentacoes WHERE produto_id = ? ORDER BY data DESC", (id,))
+        historico = cur.fetchall()
+
+    return render_template("historico_produto.html", produto=produto, historico=historico)

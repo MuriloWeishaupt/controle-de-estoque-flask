@@ -12,14 +12,16 @@ def login():
 
         con = sql.connect("form_db.db")
         cur = con.cursor()
-        cur.execute("SELECT id, nome FROM usuarios WHERE email = ? AND senha = ?", (email, senha))
+        cur.execute("SELECT id, nome, tipo FROM usuarios WHERE email = ? AND senha = ?", (email, senha))
         user = cur.fetchone()
         con.close()
 
         if user:
             session["user_id"] = user[0]
             session["user_name"] = user[1]
+            session["user_tipo"] = user[2]
             flash("Login realizado com sucesso!", "success")
+            print(session)
             return redirect(url_for("produto.index"))
         else:
             flash("Email ou senha incorretos!", "danger")

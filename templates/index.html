@@ -11,19 +11,27 @@
         <th scope="col">Fabricante</th>
         <th scope="col">Descrição</th>
         <th scope="col">Preço (R$)</th>
+        <th scope="col">Ações</th>
       </tr>
     </thead>
     <tbody>
         {% for row in datas %}
-        <tr>
+        <tr class="{% if row['QUANTIDADE_ESTOQUE'] <= quantidade_minima %} table-danger{% endif %}"> 
             <td>{{loop.index}}</td>
             <td>{{row.NOME}}</td>
             <td>{{row.QUANTIDADE_ESTOQUE}}</td>
             <td>{{row.FABRICANTE}}</td>
             <td>{{row.DESCRICAO}}</td>
             <td>{{row.PRECO}}</td>
-            <td><a href="{{url_for('produto.edit_produto', id=row.ID)}}" class="btn btn-primary">Editar</a></td>
-            <td><a href="{{url_for('produto.delete_produto', id=row.ID)}}" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja apagar?')">Deletar</a></td>
+            {% if session.get("user_tipo") == "admin" %}
+              <td><a href="{{url_for('produto.edit_produto', id=row.ID)}}" class="btn btn-primary">Editar</a></td>
+              <td><a href="{{url_for('produto.delete_produto', id=row.ID)}}" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja apagar?')">Deletar</a></td>
+            {% endif %}
+            <td><a href="{{ url_for('produto.movimentar_produto', id=row.ID) }}" class="btn btn-warning">Movimentar</a></td>
+            <td>
+              <a href="{{ url_for('produto.historico_produto', id=row.ID) }}" class="btn btn-info">Histórico</a>
+            </td>
+
         </tr>
       {% endfor %}
     </tbody>

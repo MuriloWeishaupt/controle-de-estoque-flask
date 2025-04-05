@@ -15,7 +15,7 @@
   </style>
 </head>
 <body>
-    <header style="">
+    <header>
       {% if request.endpoint != 'auth.login' %}
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="container-fluid">
@@ -23,7 +23,7 @@
                 <div class="navbar-nav">
                   <a class="nav-link active" aria-current="page" href="{{url_for('produto.index')}}">Home</a>
                   <a class="nav-link" href="{{url_for('produto.add_produto')}}">Formulário</a>
-                  {% if session.get("user_name") == "admin" %}
+                  {% if session.get("user_tipo") == "admin" %}
                   <a class="nav-link btn btn-outline-primary ms-3" href="{{ url_for('usuario.adicionar_usuario') }}">
                       Adicionar Usuário
                   </a>

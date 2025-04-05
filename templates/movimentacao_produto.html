@@ -1,0 +1,19 @@
+{% extends 'layout.html' %}
+{% block body %}
+<h3 class="mb-3">Movimentar Produto: {{ produto.NOME }}</h3>
+<form method="POST">
+  <div class="mb-3">
+    <label for="tipo_movimentacao" class="form-label">Tipo de movimentação:</label>
+    <select name="tipo_movimentacao" class="form-select" required>
+      <option value="entrada">Entrada</option>
+      <option value="saida">Saída</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label for="quantidade" class="form-label">Quantidade:</label>
+    <input type="number" name="quantidade" class="form-control" required min="1">
+  </div>
+  <button type="submit" class="btn btn-success">Confirmar</button>
+  <a href="{{ url_for('produto.index') }}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}
