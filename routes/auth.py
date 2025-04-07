@@ -1,5 +1,6 @@
 from flask import Blueprint, request, redirect, url_for, flash, render_template, session
 import sqlite3 as sql
+from extensoes import bcrypt
 
 bp_auth = Blueprint("auth", __name__)
 
@@ -12,11 +13,11 @@ def login():
 
         con = sql.connect("form_db.db")
         cur = con.cursor()
-        cur.execute("SELECT id, nome, tipo FROM usuarios WHERE email = ? AND senha = ?", (email, senha))
+        cur.execute("SELECT id, nome, tipo, senha FROM usuarios WHERE email = ?", (email, ))
         user = cur.fetchone()
         con.close()
 
-        if user:
+        if user and bcrypt.check_password_hash(user[3], senha):
             session["user_id"] = user[0]
             session["user_name"] = user[1]
             session["user_tipo"] = user[2]

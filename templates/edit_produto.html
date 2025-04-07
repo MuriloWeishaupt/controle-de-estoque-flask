@@ -21,11 +21,11 @@
                    </div>
                    <div class="form-group">
                     <label>Preço</label>
-                    <input type="number" name="preco" required class="form-control" value="{{data.PRECO}}">
+                    <input type="number" step="0.01" min="0" name="preco" pattern="^\d+,\d{2}$" required placeholder="Ex: 99.99" class="form-control" value="{{data.PRECO}}">
                    </div>
                    <br>
             </div>
-            <input type="submit" value="Confirmar" class="btn btn-primary">
+            <input type="submit" value="Confirmar" class="btn btn-dark">
         </form>
 
     </div>

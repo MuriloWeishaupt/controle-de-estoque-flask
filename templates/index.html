@@ -1,39 +1,69 @@
 {% extends 'layout.html' %}
 {% block body %}
-<h3 class="text-center text-muted mb-3"></h3>
-<p class="text-right"><a href="{{url_for('produto.add_produto')}}" class="btn btn-success">+ Novo Produto</a></p>
-<table class="table table-bordered">
-    <thead>
-      <tr>
-        <th scope="col">ID</th>
-        <th scope="col">Nome</th>
-        <th scope="col">Quantidade em Estoque</th>
-        <th scope="col">Fabricante</th>
-        <th scope="col">Descrição</th>
-        <th scope="col">Preço (R$)</th>
-        <th scope="col">Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-        {% for row in datas %}
-        <tr class="{% if row['QUANTIDADE_ESTOQUE'] <= quantidade_minima %} table-danger{% endif %}"> 
-            <td>{{loop.index}}</td>
-            <td>{{row.NOME}}</td>
-            <td>{{row.QUANTIDADE_ESTOQUE}}</td>
-            <td>{{row.FABRICANTE}}</td>
-            <td>{{row.DESCRICAO}}</td>
-            <td>{{row.PRECO}}</td>
-            {% if session.get("user_tipo") == "admin" %}
-              <td><a href="{{url_for('produto.edit_produto', id=row.ID)}}" class="btn btn-primary">Editar</a></td>
-              <td><a href="{{url_for('produto.delete_produto', id=row.ID)}}" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja apagar?')">Deletar</a></td>
-            {% endif %}
-            <td><a href="{{ url_for('produto.movimentar_produto', id=row.ID) }}" class="btn btn-warning">Movimentar</a></td>
-            <td>
-              <a href="{{ url_for('produto.historico_produto', id=row.ID) }}" class="btn btn-info">Histórico</a>
-            </td>
+<div class="container py-4">
+    <h2 class="text-center text-muted mb-4">
+        <i class="bi bi-box-seam"></i> Gerenciamento de Estoque
+    </h2>
 
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <div class="text-end mb-3">
+        <a href="{{ url_for('produto.add_produto') }}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Novo Produto
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-bordered table-striped table-hover table-sm m-0 text-center align-middle">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Qtd. Estoque</th>
+                        <th>Fabricante</th>
+                        <th>Descrição</th>
+                        <th>Preço (R$)</th>
+                        <th colspan="4">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in datas %}
+                    <tr class="{% if row['QUANTIDADE_ESTOQUE'] <= quantidade_minima %}table-danger{% endif %}">
+                        <td class="text-center">{{ loop.index }}</td>
+                        <td>{{ row.NOME }}</td>
+                        <td class="text-center">{{ row.QUANTIDADE_ESTOQUE }}</td>
+                        <td>{{ row.FABRICANTE }}</td>
+                        <td>{{ row.DESCRICAO }}</td>
+                        <td>R$ {{ "%.2f"|format(row.PRECO | float) }}</td>
+
+                        {% if session.get("user_tipo") == "admin" %}
+                        <td class="text-center">
+                            <a href="{{ url_for('produto.edit_produto', id=row.ID) }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-pencil-square"></i> Editar
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ url_for('produto.delete_produto', id=row.ID) }}" class="btn btn-sm btn-danger"
+                               onclick="return confirm('Tem certeza que deseja apagar?')">
+                                <i class="bi bi-trash3"></i> Deletar
+                            </a>
+                        </td>
+                        {% endif %}
+
+                        <td class="text-center">
+                            <a href="{{ url_for('produto.movimentar_produto', id=row.ID) }}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-arrow-left-right"></i> Movimentar
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ url_for('produto.historico_produto', id=row.ID) }}" class="btn btn-sm btn-info">
+                                <i class="bi bi-clock-history"></i> Histórico
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

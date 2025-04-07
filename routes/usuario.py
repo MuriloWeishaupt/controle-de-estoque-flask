@@ -1,5 +1,6 @@
 from flask import Blueprint, request, url_for, redirect, render_template, session, flash
 import sqlite3 as sql
+from extensoes import bcrypt
 
 bp_usuario = Blueprint("usuario", __name__)
 
@@ -11,14 +12,18 @@ def adicionar_usuario():
         return redirect(url_for("auth.login"))
     
     if request.method == "POST":
-        nome = request.form["nome"]
-        email = request.form["email"]
-        senha = request.form["senha"]
+        nome = request.form["nome"].strip()
+        email = request.form["email"].strip()
+        senha = request.form["senha"].strip()
+        senha_hash = bcrypt.generate_password_hash(senha).decode("utf-8")
         tipo = request.form.get("tipo", "comum")
+
+        if not nome or not email or not senha:
+            flash("Todos os campos devem ser preenchidos!", "danger")
 
         con = sql.connect("form_db.db")
         cur = con.cursor()
-        cur.execute("INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, ?)", (nome, email, senha, tipo))
+        cur.execute("INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, ?)", (nome, email, senha_hash, tipo))
         con.commit()
         con.close()
 

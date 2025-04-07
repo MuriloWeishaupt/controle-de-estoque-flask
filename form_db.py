@@ -1,4 +1,7 @@
 import sqlite3
+from flask_bcrypt import Bcrypt
+
+bcrypt = Bcrypt()
 
 def criar_banco():
     con = sqlite3.connect("form_db.db")
@@ -36,8 +39,11 @@ def criar_banco():
                     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
                     )''')
     
-    cur.execute("INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, ?)", ("admin", "admin@gmail.com", "admin", "admin"))
-    cur.execute("INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, ?)", ("murilo", "murilo@gmail.com", "murilo123", "comum"))
+    senha_admin = bcrypt.generate_password_hash("admin").decode("utf-8")
+    
+    cur.execute("SELECT * FROM usuarios WHERE email = 'admin@gmail.com'")
+    if not cur.fetchone():
+        cur.execute("INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, ?)", ("admin", "admin@gmail.com", senha_admin, "admin"))
 
     con.commit()
     con.close()

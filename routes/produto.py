@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import sqlite3 as sql
 
-bp_produto = Blueprint("produto", __name__)
+bp_produto = Blueprint("produto", __name__, url_prefix="/estoque")
 
 @bp_produto.route("/")
 @bp_produto.route("/index")
+
 def index():
     if "user_id" not in session:
         flash("Você precisa fazer login para acessar essa página")
@@ -16,7 +17,7 @@ def index():
         cur.execute("SELECT * FROM produtos")
         data = cur.fetchall()
 
-    quantidade_minima = 10
+    quantidade_minima = 2
     return render_template("index.html", datas=data, quantidade_minima=quantidade_minima)
 
 @bp_produto.route("/add_produto", methods=["POST", "GET"])
@@ -30,7 +31,16 @@ def add_produto():
         quantidade_estoque = request.form["quantidade_estoque"]
         fabricante = request.form["fabricante"]
         descricao = request.form["descricao"]
-        preco = request.form["preco"]
+
+        if not nome or not quantidade_estoque or not fabricante or not descricao:
+            flash("Preencha todos os campos!", "warning")
+            return redirect(url_for("produto.add_produto"))
+
+        try:
+            preco = float(request.form["preco"].replace(",", "."))
+        except ValueError:
+            flash("Preço inválido! Use ponto ou vírgula como separador", "danger")
+            return redirect(url_for("produto.add_produto"))
 
         with sql.connect("form_db.db") as con:
             cur = con.cursor()
@@ -52,7 +62,16 @@ def edit_produto(id):
         quantidade_estoque = request.form["quantidade_estoque"]
         fabricante = request.form["fabricante"]
         descricao = request.form["descricao"]
-        preco = request.form["preco"]
+
+        if not nome or not quantidade_estoque or not fabricante or not descricao:
+            flash("Preencha todos os campos!", "warning")
+            return redirect(url_for("produto.edit_produto", id=id))
+
+        try:
+            preco = float(request.form["preco"].replace(",", "."))
+        except ValueError:
+            flash("Preço inválido! Use ponto ou vírgula como separador", "danger")
+            return redirect(url_for("produto.edit_produto", id=id))
 
         with sql.connect("form_db.db") as con:
             cur = con.cursor()
