@@ -1,8 +1,17 @@
 {% extends "layout.html" %}
 
 {% block body %}
+
+
 <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="container">
+        <div class="text-center mb-4">
+            <img src="{{ url_for('static', filename='img/techEstoque_logo.png') }}" 
+                 alt="TechEstoque Logo" 
+                 class="img-fluid" 
+                 style="max-width: 250px;">
+          </div>
+          
         <div class="row justify-content-center">
             <div class="col-md-4">
                 <div class="card shadow-lg">
@@ -20,19 +29,21 @@
                             {% endif %}
                         {% endwith %}
 
+                        
+
                         <form action="{{ url_for('auth.login') }}" method="POST">
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="email" name="email" class="form-control" required>
+                                <input type="email" name="email" class="form-control" placeholder="exemplo@techestoque.com" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="senha" class="form-label">Senha</label>
-                                <input type="password" name="senha" class="form-control" required>
+                                <input type="password" name="senha" class="form-control" placeholder="*********" required>
                             </div>
 
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">Entrar</button>
+                                <button type="submit" class="btn btn-dark">Entrar</button>
                             </div>
                         </form>
 

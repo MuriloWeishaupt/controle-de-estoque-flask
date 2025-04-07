@@ -10,15 +10,37 @@ def index():
     if "user_id" not in session:
         flash("Você precisa fazer login para acessar essa página")
         return redirect(url_for("auth.login"))
+    
+    nome_filtro = request.args.get("nome", "").strip()
+    fabricante_filtro = request.args.get("fabricante", "").strip()
+    estoque_minimo_filtro = request.args.get("estoque_minimo", "").strip()
+
+    query_inicial = "SELECT * FROM produtos WHERE 1=1"
+    params = []
+
+    if nome_filtro:
+        query_inicial += " AND NOME LIKE ?"
+        params.append(f"%{nome_filtro}%")
+
+    if fabricante_filtro:
+        query_inicial += " AND FABRICANTE LIKE ?"
+        params.append(f"%{fabricante_filtro}%")
+
+    if estoque_minimo_filtro.isdigit():
+        query_inicial += " AND QUANTIDADE_ESTOQUE >= ?"
+        params.append(int(estoque_minimo_filtro))
+
+
 
     with sql.connect("form_db.db") as con:
         con.row_factory = sql.Row
         cur = con.cursor()
-        cur.execute("SELECT * FROM produtos")
+        cur.execute(query_inicial, params)
         data = cur.fetchall()
+        
 
     quantidade_minima = 2
-    return render_template("index.html", datas=data, quantidade_minima=quantidade_minima)
+    return render_template("index.html", datas=data, quantidade_minima=quantidade_minima, nome_filtro=nome_filtro, fabricante_filtro=fabricante_filtro, estoque_minimo_filtro=estoque_minimo_filtro)
 
 @bp_produto.route("/add_produto", methods=["POST", "GET"])
 def add_produto():
@@ -28,11 +50,15 @@ def add_produto():
 
     if request.method == "POST":
         nome = request.form["nome"]
-        quantidade_estoque = request.form["quantidade_estoque"]
+        try:
+            quantidade_estoque = int(request.form["quantidade_estoque"])
+        except ValueError:
+            flash("Quantidade inválida!", "danger")
+            return redirect(url_for("produto.movimentar_produto", id=id))
         fabricante = request.form["fabricante"]
         descricao = request.form["descricao"]
 
-        if not nome or not quantidade_estoque or not fabricante or not descricao:
+        if not nome or not quantidade_estoque or not fabricante or descricao is None:
             flash("Preencha todos os campos!", "warning")
             return redirect(url_for("produto.add_produto"))
 
@@ -59,7 +85,11 @@ def add_produto():
 def edit_produto(id):
     if request.method == "POST":
         nome = request.form["nome"]
-        quantidade_estoque = request.form["quantidade_estoque"]
+        try:
+            quantidade_estoque = int(request.form["quantidade_estoque"])
+        except ValueError:
+            flash("Quantidade inválida!", "danger")
+            return redirect(url_for("produto.edit_produto", id=id))
         fabricante = request.form["fabricante"]
         descricao = request.form["descricao"]
 
@@ -113,6 +143,10 @@ def movimentar_produto(id):
         if request.method == "POST":
             tipo_movimentacao = request.form["tipo_movimentacao"]
             quantidade = int(request.form["quantidade"])
+
+            if quantidade <= 0:
+                flash("Quantidade inválida!", "danger")
+                return redirect(url_for("produto.movimentar_produto", id=id))
 
             if tipo_movimentacao == 'entrada':
                 nova_quantidade = produto["QUANTIDADE_ESTOQUE"] + quantidade
