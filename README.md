@@ -24,7 +24,7 @@ Um sistema web simples e eficiente para controle de produtos em estoque, com aut
 - Cadastro, edição e exclusão de produtos
 - Movimentações de entrada e saída
 - Histórico completo por produto
-- Filtros por quantidade mínima
+- Filtros por quantidade mínima, fabricante e nome
 
 ### 📊 Relatórios & Gráficos
 - Listagem com alertas visuais de estoque baixo
